@@ -29,10 +29,10 @@ public class VoiceServiceImpl implements VoiceService {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             log.info("Parsed keyword: {}", keyword);
-            return contactService.searchContacts(userId, keyword);
+            return contactService.searchContacts(userId, keyword).getResults();
         } else {
             // Fallback to searching the whole text
-            return contactService.searchContacts(userId, text);
+            return contactService.searchContacts(userId, text).getResults();
         }
     }
 

@@ -1,6 +1,8 @@
 package com.bank.transfersearch.service.impl;
 
 import com.bank.transfersearch.dto.ContactDTO;
+import com.bank.transfersearch.dto.SearchResponseDTO;
+
 import com.bank.transfersearch.entity.Contact;
 import com.bank.transfersearch.entity.ContactDocument;
 import com.bank.transfersearch.kafka.ContactProducer;
@@ -99,21 +101,39 @@ public class ContactServiceImplTest {
         Long userId = 1L;
         String keyword = "Test";
         Set<String> recentContacts = new HashSet<>(Arrays.asList("Test User"));
-        List<ContactDocument> searchResults = Arrays.asList(sampleDocument);
 
         when(stringRedisTemplate.opsForZSet()).thenReturn(zSetOperations);
         when(zSetOperations.reverseRange(anyString(), eq(0L), eq(9L))).thenReturn(recentContacts);
-        when(contactSearchRepository.searchContacts(userId, keyword, recentContacts)).thenReturn(searchResults);
-        when(contactMapper.toDTO(any(ContactDocument.class))).thenReturn(sampleContactDTO);
+        
+        SearchResponseDTO response = new SearchResponseDTO();
+        response.setResults(Arrays.asList(sampleContactDTO));
+        
+        when(contactSearchRepository.searchContacts(userId, keyword, recentContacts)).thenReturn(response);
 
         // Act
-        List<ContactDTO> results = contactService.searchContacts(userId, keyword);
+        SearchResponseDTO result = contactService.searchContacts(userId, keyword);
 
         // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getResults().size());
+        assertEquals("Test User", result.getResults().get(0).getContactName());
+        verify(contactSearchRepository, times(1)).searchContacts(userId, keyword, recentContacts);
+    }
+
+    @Test
+    void suggestContacts_ReturnsSuggestionsSuccessfully() {
+        Long userId = 1L;
+        String prefix = "Te";
+        List<String> expectedSuggestions = Arrays.asList("Test User");
+        
+        when(contactSearchRepository.suggestContacts(prefix)).thenReturn(expectedSuggestions);
+
+        List<String> results = contactService.suggestContacts(userId, prefix);
+
         assertNotNull(results);
         assertEquals(1, results.size());
-        assertEquals("Test User", results.get(0).getContactName());
-        verify(contactSearchRepository, times(1)).searchContacts(userId, keyword, recentContacts);
+        assertEquals("Test User", results.get(0));
+        verify(contactSearchRepository, times(1)).suggestContacts(prefix);
     }
 
     @Test

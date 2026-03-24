@@ -123,3 +123,36 @@ curl -X GET "http://localhost:8080/contacts/search?userId=1001&keyword=zs"
 - **ES 无法连接**: 检查 Docker 日志，确保分配给 ES 的内存足够（默认已在 Compose 中配置 `512MB`）。
 - **Kafka 消费失败**: 初始启动时 Kafka 可能准备较慢，应用会自动重试。
 - **数据不同步**: 检查 `search-service` 的日志，看是否有 `ContactConsumer` 的报错记录。
+
+---
+
+## 8. 新功能与热更部署 (Continuous Deployment)
+
+当您在项目中添加了新功能或修改了代码后，可以按照以下步骤重新部署：
+
+### 8.1 重新打包
+
+执行编译命令以生成包含新代码的 JAR 包：
+```bash
+mvn clean package -DskipTests
+```
+
+### 8.2 滚动更新服务
+
+使用 Docker Compose 重新构建并平滑重启应用服务（此命令不会停止数据库等稳定组件）：
+```bash
+docker-compose up -d --build search-service
+```
+
+### 8.3 映射变更处理 (特别注意)
+
+如果您的新功能涉及 **Elasticsearch Mapping** 的结构性变更（例如增加了新的分析器或字段类型），建议的操作流程为：
+
+1. **备份数据** (如有必要)。
+2. **删除旧索引**:
+   ```bash
+   curl -X DELETE "http://localhost:9200/transfer_contact_index"
+   ```
+3. **重启应用**: 按照 8.2 步骤重启，应用会自动触发新的索引创建逻辑。
+4. **重新同步/导入数据**: 通过 Kafka 或调用 5.1 中的导入接口重新灌入数据。
+

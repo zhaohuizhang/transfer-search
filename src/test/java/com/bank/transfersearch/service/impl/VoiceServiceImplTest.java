@@ -1,6 +1,7 @@
 package com.bank.transfersearch.service.impl;
 
 import com.bank.transfersearch.dto.ContactDTO;
+import com.bank.transfersearch.dto.SearchResponseDTO;
 import com.bank.transfersearch.service.ContactService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,9 @@ public class VoiceServiceImplTest {
         // Arrange
         Long userId = 1L;
         String text = "给张三转账";
-        when(contactService.searchContacts(eq(userId), eq("张三"))).thenReturn(mockContacts);
+        SearchResponseDTO response = new SearchResponseDTO();
+        response.setResults(mockContacts);
+        when(contactService.searchContacts(eq(userId), eq("张三"))).thenReturn(response);
 
         // Act
         List<ContactDTO> results = voiceService.voiceSearch(userId, text);
@@ -57,7 +60,9 @@ public class VoiceServiceImplTest {
         // Arrange
         Long userId = 1L;
         String text = "我要给王五打钱";
-        when(contactService.searchContacts(eq(userId), eq("我要王五"))).thenReturn(mockContacts);
+        SearchResponseDTO response = new SearchResponseDTO();
+        response.setResults(mockContacts);
+        when(contactService.searchContacts(eq(userId), eq("我要王五"))).thenReturn(response);
 
         // Act
         List<ContactDTO> results = voiceService.voiceSearch(userId, text);
@@ -72,7 +77,9 @@ public class VoiceServiceImplTest {
         // Arrange
         Long userId = 1L;
         String text = null;
-        when(contactService.searchContacts(eq(userId), eq(null))).thenReturn(mockContacts);
+        SearchResponseDTO response = new SearchResponseDTO();
+        response.setResults(mockContacts);
+        when(contactService.searchContacts(eq(userId), eq(null))).thenReturn(response);
 
         // Act
         List<ContactDTO> results = voiceService.voiceSearch(userId, text);

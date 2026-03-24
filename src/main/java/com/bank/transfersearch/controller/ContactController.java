@@ -1,6 +1,8 @@
 package com.bank.transfersearch.controller;
 
+import com.bank.transfersearch.dto.AnalyzeResponseDTO;
 import com.bank.transfersearch.dto.ContactDTO;
+import com.bank.transfersearch.dto.SearchResponseDTO;
 import com.bank.transfersearch.service.ContactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,11 +30,29 @@ public class ContactController {
 
     @GetMapping("/search")
     @Operation(summary = "Search contacts using Elasticsearch")
-    public ResponseEntity<List<ContactDTO>> searchContacts(
+    public ResponseEntity<SearchResponseDTO> searchContacts(
             @RequestParam Long userId,
             @RequestParam String keyword) {
 
-        List<ContactDTO> results = contactService.searchContacts(userId, keyword);
+        SearchResponseDTO response = contactService.searchContacts(userId, keyword);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/analyze")
+    @Operation(summary = "Simulate Elasticsearch analyzer")
+    public ResponseEntity<AnalyzeResponseDTO> analyze(
+            @RequestParam String text,
+            @RequestParam(defaultValue = "pinyin_analyzer") String analyzer) {
+        List<String> tokens = contactService.analyze(text, analyzer);
+        return ResponseEntity.ok(new AnalyzeResponseDTO(tokens));
+    }
+
+    @GetMapping("/suggest")
+    @Operation(summary = "Suggest contacts using Elasticsearch completion suggester")
+    public ResponseEntity<List<String>> suggestContacts(
+            @RequestParam(required = false) Long userId,
+            @RequestParam String prefix) {
+        List<String> results = contactService.suggestContacts(userId, prefix);
         return ResponseEntity.ok(results);
     }
 

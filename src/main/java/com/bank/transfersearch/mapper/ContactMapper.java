@@ -4,6 +4,8 @@ import com.bank.transfersearch.dto.ContactDTO;
 import com.bank.transfersearch.entity.Contact;
 import com.bank.transfersearch.entity.ContactDocument;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ContactMapper {
@@ -55,6 +57,13 @@ public class ContactMapper {
         document.setBankName(contact.getBankName());
         document.setPhone(contact.getPhone());
         document.setCreateTime(contact.getCreateTime());
+        
+        List<String> suggest = new ArrayList<>();
+        if (contact.getContactPinyin() != null) suggest.add(contact.getContactPinyin());
+        if (contact.getContactName() != null) suggest.add(contact.getContactName());
+        if (contact.getContactInitial() != null) suggest.add(contact.getContactInitial());
+        document.setContactSuggest(suggest);
+        
         return document;
     }
 }

@@ -1,6 +1,7 @@
 package com.bank.transfersearch.service.impl;
 
 import com.bank.transfersearch.dto.ContactDTO;
+import com.bank.transfersearch.dto.SearchResponseDTO;
 import com.bank.transfersearch.entity.Contact;
 import com.bank.transfersearch.entity.ContactDocument;
 import com.bank.transfersearch.kafka.ContactProducer;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,8 +47,18 @@ public class ContactServiceImpl implements ContactService {
         contact.setId(contactDTO.getId());
         contact.setUserId(contactDTO.getUserId());
         contact.setContactName(contactDTO.getContactName());
-        contact.setContactPinyin(contactDTO.getContactPinyin());
-        contact.setContactInitial(contactDTO.getContactInitial());
+        
+        String pinyin = contactDTO.getContactPinyin();
+        if (pinyin == null || pinyin.trim().isEmpty()) {
+            pinyin = com.bank.transfersearch.util.PinyinUtil.getPinyin(contactDTO.getContactName());
+        }
+        contact.setContactPinyin(pinyin);
+        
+        String initial = contactDTO.getContactInitial();
+        if (initial == null || initial.trim().isEmpty()) {
+            initial = com.bank.transfersearch.util.PinyinUtil.getInitial(contactDTO.getContactName());
+        }
+        contact.setContactInitial(initial);
         contact.setBankName(contactDTO.getBankName());
         contact.setAccountNo(contactDTO.getAccountNo());
         contact.setPhone(contactDTO.getPhone());
@@ -67,18 +77,25 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public List<ContactDTO> searchContacts(Long userId, String keyword) {
+    public SearchResponseDTO searchContacts(Long userId, String keyword) {
         log.info("Searching contacts for user: {} with keyword: {}", userId, keyword);
 
         // Retrieve recent contacts to boost their score
         Set<String> recentContacts = getRecentContacts(userId);
 
         // Search in Elasticsearch
-        List<ContactDocument> searchResults = contactSearchRepository.searchContacts(userId, keyword, recentContacts);
+        return contactSearchRepository.searchContacts(userId, keyword, recentContacts);
+    }
 
-        return searchResults.stream()
-                .map(contactMapper::toDTO)
-                .collect(Collectors.toList());
+    @Override
+    public List<String> analyze(String text, String analyzer) {
+        return contactSearchRepository.analyze(text, analyzer);
+    }
+
+    @Override
+    public List<String> suggestContacts(Long userId, String prefix) {
+        log.info("Suggesting contacts for user: {} with prefix: {}", userId, prefix);
+        return contactSearchRepository.suggestContacts(prefix);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.bank.transfersearch.controller;
 
 import com.bank.transfersearch.dto.ContactDTO;
+import com.bank.transfersearch.dto.SearchResponseDTO;
 import com.bank.transfersearch.service.ContactService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,15 +66,30 @@ public class ContactControllerTest {
 
     @Test
     void searchContacts_ShouldReturnListOfContacts() throws Exception {
-        List<ContactDTO> contacts = Arrays.asList(sampleContactDTO);
-        when(contactService.searchContacts(eq(1L), eq("Test"))).thenReturn(contacts);
+        SearchResponseDTO response = new SearchResponseDTO();
+        response.setResults(Arrays.asList(sampleContactDTO));
+        
+        when(contactService.searchContacts(eq(1L), eq("Test"))).thenReturn(response);
 
         mockMvc.perform(get("/contacts/search")
                 .param("userId", "1")
                 .param("keyword", "Test"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contactName").value("Test User"))
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.results[0].contactName").value("Test User"))
+                .andExpect(jsonPath("$.results.length()").value(1));
+    }
+
+    @Test
+    void suggestContacts_ShouldReturnListOfSuggestions() throws Exception {
+        List<String> suggestions = Arrays.asList("Test User", "Test User 2");
+        when(contactService.suggestContacts(eq(1L), eq("Te"))).thenReturn(suggestions);
+
+        mockMvc.perform(get("/contacts/suggest")
+                .param("userId", "1")
+                .param("prefix", "Te"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("Test User"))
+                .andExpect(jsonPath("$.length()").value(2));
     }
 
     @Test

@@ -6,11 +6,15 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Routing;
+import org.springframework.data.elasticsearch.annotations.Setting;
+import org.springframework.data.elasticsearch.annotations.CompletionField;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
 @Data
 @Document(indexName = "transfer_contact_index")
+@Setting(settingPath = "es-settings.json")
 @Routing("userId")
 public class ContactDocument {
 
@@ -24,7 +28,7 @@ public class ContactDocument {
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String contactName;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "pinyin_analyzer", searchAnalyzer = "standard")
     private String contactPinyin;
 
     @Field(type = FieldType.Keyword)
@@ -35,6 +39,9 @@ public class ContactDocument {
 
     @Field(type = FieldType.Keyword)
     private String phone;
+
+    @CompletionField
+    private List<String> contactSuggest;
 
     // Highlight field to pass the highlighted name during search
     private String highlightName;

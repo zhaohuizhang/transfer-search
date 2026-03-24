@@ -1,0 +1,19 @@
+{
+  "analysis": {
+    "tokenizer": {
+      "pinyin_tokenizer": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 20,
+        "token_chars": ["letter"]
+      }
+    },
+    "analyzer": {
+      "pinyin_analyzer": {
+        "type": "custom",
+        "tokenizer": "pinyin_tokenizer",
+        "filter": ["lowercase"]
+      }
+    }
+  }
+}

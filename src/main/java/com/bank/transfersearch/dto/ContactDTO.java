@@ -3,6 +3,8 @@ package com.bank.transfersearch.dto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 
 @Data
 public class ContactDTO {
@@ -16,4 +18,6 @@ public class ContactDTO {
     private String phone;
     private LocalDateTime createTime;
     private String highlightName;
+    private Double score;
+    private List<String> matchedFields;
 }
